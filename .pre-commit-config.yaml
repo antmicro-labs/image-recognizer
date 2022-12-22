@@ -15,6 +15,8 @@ repos:
         additional_dependencies:
           - flake8-bugbear
           - flake8-implicit-str-concat
+        args:
+          - --max-line-length=120
   - repo: https://github.com/peterdemin/pip-compile-multi
     rev: v2.6.1
     hooks:
