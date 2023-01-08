@@ -5,6 +5,7 @@ name = "pypi"
 
 [packages]
 tensorflow = "==2.9.2"
+gdown = "*"
 
 [dev-packages]
 pre-commit = "*"
