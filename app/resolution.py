@@ -14,12 +14,12 @@ from dataclasses import dataclass
 
 
 class ResolutionFinder:
-    DEFAULT_MODEL_URL = "https://drive.google.com/u/0/uc?id=15v3L5-tcCeDpTQFj6qHtecmXuYssaNnA&export=download"
+    DEFAULT_MODEL_URL = "https://drive.google.com/u/0/uc?id=1i9tb42YtHwdnP5474YdsDuCQn2IfbX6J&export=download"
     DEFAULT_MODEL_PATH = "models/default_resolution_model.h5"
     DEFAULT_MIN_WIDTH = 256
     DEFAULT_MIN_HEIGHT = 256
-    DEFAULT_WH_RATIO = 6
-    DEFAULT_STEP = 50
+    DEFAULT_WH_RATIO = 8
+    DEFAULT_STEP = 20
 
     def __init__(
         self,
@@ -85,7 +85,7 @@ class ResolutionFinder:
         Returns:
             List(FoundedResolution): List of founded resolutions, sorted descending by confidence.
         """
-        if len(raw) < min_width * min_height:
+        if len(raw) < self.DEFAULT_MIN_WIDTH * self.DEFAULT_MIN_HEIGHT:
             raise self.ImageTooSmall(
                 f"Image is too small. Required size: {min_width}*{min_height}\nActual size: {len(raw)}"
             )
@@ -98,7 +98,7 @@ class ResolutionFinder:
             img = img.resize((256, 256))
             img = np.asarray(img)
             img = np.expand_dims(img, axis=-1)
-            batches.append(img / 255 - 0.5)
+            batches.append(tf.convert_to_tensor(img / 255 - 0.5))
         batches = tf.stack(batches)
         predictions: NDArray = np.squeeze(self.model.predict(batches), axis=-1)
         result = {}
@@ -129,9 +129,12 @@ class ResolutionFinder:
                 if i == best_results:
                     break
                 result.append(
-                    self.single_prediction_tour(raw, res.width - 25, res.width + 25, 1)[
-                        0
-                    ]
+                    self.single_prediction_tour(
+                        raw,
+                        res.width - self.DEFAULT_STEP,
+                        res.width + self.DEFAULT_STEP,
+                        1,
+                    )[0]
                 )
             result = sorted(result, key=lambda x: x.confidence, reverse=True)
             return result
