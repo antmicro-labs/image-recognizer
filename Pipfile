@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 tensorflow = "==2.9.2"
 gdown = "*"
+parameterized = "*"
 
 [dev-packages]
 pre-commit = "*"

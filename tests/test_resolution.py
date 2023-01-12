@@ -11,34 +11,36 @@ class TestResolution(unittest.TestCase):
         self.REGEX = r".+_.+_.+_(\d+)x(\d+).*"
         self.delta = 20
 
-    def template(self, format: str):
+    def template(self, format: str, mul: float):
         DIR = self.DATA_DIR + f"/{format}"
         for im in os.listdir(DIR):
-            expected = int(re.search(self.REGEX, im).group(1))
+            expected = int(int(re.search(self.REGEX, im).group(1)) * mul)
             results = ResolutionFinder().find_resolution(f"{DIR}/{im}")
             best = min(results, key=lambda x: abs(x.width - expected))
-            self.assertAlmostEqual(expected, best.width, delta=self.delta)
+            print(f"Got: {best.width} Expected: {expected}")
+            with self.subTest():
+                self.assertAlmostEqual(expected, best.width, delta=self.delta)
 
     def test_abgr444(self):
-        self.template("abgr444")
+        self.template("abgr444", 12 / 8)
 
     def test_abgr555(self):
-        self.template("abgr555")
+        self.template("abgr555", 15 / 8)
 
     def test_gray(self):
-        self.template("gray")
+        self.template("gray", 1)
 
     def test_rgb(self):
-        self.template("rgb")
+        self.template("rgb", 3)
 
     def test_rgb332(self):
-        self.template("rgb332")
+        self.template("rgb332", 1)
 
     def test_rgb565(self):
-        self.template("rgb565")
+        self.template("rgb565", 2)
 
     def test_rgba32(self):
-        self.template("rgba32")
+        self.template("rgba32", 4)
 
     def test_uyvy(self):
-        self.template("uyvy")
+        self.template("uyvy", 1)
