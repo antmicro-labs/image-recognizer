@@ -7,6 +7,9 @@ name = "pypi"
 tensorflow = "==2.9.2"
 gdown = "*"
 parameterized = "*"
+numpy = "*"
+opencv-python = "*"
+pillow = "*"
 
 [dev-packages]
 pre-commit = "*"
