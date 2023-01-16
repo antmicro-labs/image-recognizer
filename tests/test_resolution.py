@@ -15,7 +15,9 @@ class TestResolution(unittest.TestCase):
         DIR = self.DATA_DIR + f"/{format}"
         for im in os.listdir(DIR):
             expected = int(int(re.search(self.REGEX, im).group(1)) * mul)
-            results = ResolutionFinder().find_resolution(f"{DIR}/{im}")
+            results = ResolutionFinder(ovveride_model=False).find_resolution(
+                f"{DIR}/{im}"
+            )
             best = min(results, key=lambda x: abs(x.width - expected))
             print(f"Got: {best.width} Expected: {expected}")
             with self.subTest():
