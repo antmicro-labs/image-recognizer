@@ -34,6 +34,8 @@ class TestResolution(unittest.TestCase):
             else:
                 mul = sum([int(x) for x in bits]) / 8
         expected = int(int(img_data.group(1)) * mul)
-        results = ResolutionFinder().find_resolution(f"{DATA_DIR}/{filename}")
+        results = ResolutionFinder(ovveride_model=True).find_resolution(
+            f"{DATA_DIR}/{filename}"
+        )
         best = min(results, key=lambda x: abs(x.width - expected))
         self.assertAlmostEqual(expected, best.width, delta=self.delta)

@@ -1,6 +1,7 @@
 import math
 import os
 import logging
+import json
 import tensorflow as tf
 from tensorflow import keras  # noqa
 from keras import models
@@ -14,12 +15,57 @@ from dataclasses import dataclass
 
 
 class ResolutionFinder:
-    DEFAULT_MODEL_URL = "https://drive.google.com/u/0/uc?id=1i9tb42YtHwdnP5474YdsDuCQn2IfbX6J&export=download"
+    with open("models_links.json") as f:
+        DEFAULT_MODEL_URL = json.load(f).get("default_resolution_model", None)
     DEFAULT_MODEL_PATH = "models/default_resolution_model.h5"
     DEFAULT_MIN_WIDTH = 256
     DEFAULT_MIN_HEIGHT = 256
     DEFAULT_WH_RATIO = 8
     DEFAULT_STEP = 20
+    RESOLUTION_HEIGHTS = [
+        120,
+        144,
+        160,
+        200,
+        240,
+        300,
+        320,
+        360,
+        400,
+        480,
+        500,
+        540,
+        600,
+        640,
+        700,
+        720,
+        768,
+        800,
+        864,
+        900,
+        960,
+        1000,
+        1024,
+        1050,
+        1080,
+        1152,
+        1200,
+        1440,
+        1536,
+        1600,
+        1620,
+        1800,
+        1920,
+        2000,
+        2048,
+        2160,
+        2400,
+        2560,
+        3000,
+        3072,
+        4000,
+        4320,
+    ]
 
     def __init__(
         self,
@@ -35,6 +81,9 @@ class ResolutionFinder:
         Raises:
             InvalidModel: Invalid model format
         """
+        if (not os.path.exists(model_path)) and (self.DEFAULT_MODEL_URL is None):
+            logging.error("No default model url")
+            raise self.InvalidModel("No default model url")
         if not os.path.exists(model_path) or ovveride_model:
             if model_path == self.DEFAULT_MODEL_PATH:
                 logging.info("Downloading default model")
@@ -128,13 +177,14 @@ class ResolutionFinder:
             for i, res in enumerate(predictions):
                 if i == best_results:
                     break
-                result.append(
-                    self.single_prediction_tour(
-                        raw,
-                        res.width - self.DEFAULT_STEP,
-                        res.width + self.DEFAULT_STEP,
-                        1,
-                    )[0]
-                )
+                r = self.single_prediction_tour(
+                    raw,
+                    res.width - self.DEFAULT_STEP,
+                    res.width + self.DEFAULT_STEP,
+                    1,
+                )[0]
+                r.height = min(self.RESOLUTION_HEIGHTS, key=lambda x: abs(x - r.height))
+                r.width = len(raw) // r.height
+                result.append(r)
             result = sorted(result, key=lambda x: x.confidence, reverse=True)
             return result
