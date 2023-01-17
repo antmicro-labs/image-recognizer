@@ -4,10 +4,7 @@
 name: Python application
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+  workflow_call
 
 permissions:
   contents: read
@@ -28,14 +25,3 @@ jobs:
         pip install pipenv
     - name: Create venv
       run: pipenv install      
-  examples:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-    - name: Example resolution find
-      run: |
-        pipenv shell
-        pip list
-      
-    
-  
