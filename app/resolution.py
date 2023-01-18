@@ -7,11 +7,11 @@ from tensorflow import keras  # noqa
 from keras import models
 import numpy as np
 from PIL import Image
-from matplotlib import pyplot as plt  # noqa
 import gdown
 from typing import List
 from numpy.typing import NDArray
 from dataclasses import dataclass
+from pathlib import Path
 
 
 class ResolutionFinder:
@@ -91,6 +91,7 @@ class ResolutionFinder:
                 logging.info("Downloading model")
             gdown.download(self.DEFAULT_MODEL_URL, model_path, quiet=False)
         try:
+            Path(*Path(model_path).parts[:-1]).mkdir(parents=True, exist_ok=True)
             self.model: models.Model = models.load_model(model_path)
         except OSError:
             logging.error("Given model is not valid")

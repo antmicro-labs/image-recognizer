@@ -1,0 +1,43 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+
+name: Examples
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  example:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - run: ls
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pipenv
+    - uses: actions/cache@v3
+      id: cache-venv
+      with:
+        path: ./.venv/
+        key: ${{ runner.os }}-venv-${{ hashFiles('**/Pipfile') }}
+        restore-keys: |
+          ${{ runner.os }}-venv-
+    - name: Create venv
+      run: |
+        export PIPENV_VENV_IN_PROJECT=1
+        pipenv install
+        echo PATH=$PATH >> $GITHUB_ENV
+      if: steps.cache-venv.outputs.cache-hit != 'true'
+    - name: Run examples
+      run: ./run_examples.sh
