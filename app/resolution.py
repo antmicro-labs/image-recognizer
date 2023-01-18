@@ -89,9 +89,9 @@ class ResolutionFinder:
                 logging.info("Downloading default model")
             else:
                 logging.info("Downloading model")
+            Path(*Path(model_path).parts[:-1]).mkdir(parents=True, exist_ok=True)
             gdown.download(self.DEFAULT_MODEL_URL, model_path, quiet=False)
         try:
-            Path(*Path(model_path).parts[:-1]).mkdir(parents=True, exist_ok=True)
             self.model: models.Model = models.load_model(model_path)
         except OSError:
             logging.error("Given model is not valid")
