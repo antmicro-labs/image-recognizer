@@ -158,9 +158,7 @@ class ResolutionFinder:
             for k, v in sorted(result.items(), key=lambda item: item[1], reverse=True)
         ]
 
-    def find_resolution(
-        self, path: str, best_results: int = 3
-    ) -> List[FoundedResolution]:
+    def find_resolution(self, path: str, best_results: int = 3) -> List[FoundedResolution]:
         """Find resolution of image, from given path
 
         Args:

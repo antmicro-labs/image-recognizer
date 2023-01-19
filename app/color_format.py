@@ -7,16 +7,7 @@ from PIL import Image
 
 from app.raw_image_data_previewer.app.core import load_image, get_displayable
 
-COLOR_FORMATS = [
-    "RGB24",
-    "RGB332",
-    "RGB565",
-    "RGBA32",
-    "ABGR444",
-    "ABGR555",
-    "UYVY",
-    "GRAY"
-]
+COLOR_FORMATS = ["RGB24", "RGB332", "RGB565", "RGBA32", "ABGR444", "ABGR555", "UYVY", "GRAY"]
 
 
 class ColorFormatFinder:
@@ -48,18 +39,10 @@ class ColorFormatFinder:
             img_width (int): Image width
 
         Returns:
-            tf.Tensor: tensor with representations of all color formats
+            tf.Tensor: Tensor with representations of all color formats
         """
         color_formats_n = len(COLOR_FORMATS)
-        imgs = np.empty(
-            shape=(
-                color_formats_n,
-                self.IMG_WIDTH,
-                self.IMG_HEIGHT,
-                1
-            ),
-            dtype=np.float32
-        )
+        imgs = np.empty(shape=(color_formats_n, self.IMG_WIDTH, self.IMG_HEIGHT, 1), dtype=np.float32)
 
         for i in range(color_formats_n):
             img_data = load_image(img_path, COLOR_FORMATS[i], img_width)
@@ -67,7 +50,6 @@ class ColorFormatFinder:
             img = Image.fromarray(img, mode="RGB")
             img = img.convert("L")
             img = img.resize((self.IMG_WIDTH, self.IMG_HEIGHT))
-            img.show()
             img = np.array(img, dtype=np.float32)
             img = np.expand_dims(img, axis=-1)
             img = (img / 255) - 0.5
@@ -75,12 +57,20 @@ class ColorFormatFinder:
 
         return tf.convert_to_tensor(imgs)
 
-    def find_color_format(self, img_path: str, img_width: int) -> dict:
+    def find_color_format(self, img_path: str, img_width: int) -> dict[str, float]:
+        """Find color format of the image
+
+        Args:
+            img_path (str): Path to image
+            img_width (int): Image width
+
+        Returns:
+            dict: Dictionary with confidences for the given color format
+        """
         color_formats_tensor = self.generate_color_formats_tensor(img_path, img_width)
         color_formats_confidences = {}
         results_tensor = self.model(color_formats_tensor)
         results_list = list(np.squeeze(results_tensor, axis=-1))
         for i in range(len(COLOR_FORMATS)):
-            color_formats_confidences[COLOR_FORMATS[i]] = 1 - results_list[i]
+            color_formats_confidences[COLOR_FORMATS[i]] = results_list[i]
         return color_formats_confidences
-        
