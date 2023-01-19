@@ -10,6 +10,7 @@ parameterized = "*"
 numpy = "*"
 opencv-python = "*"
 pillow = "*"
+pillow = "*"
 
 [dev-packages]
 pre-commit = "*"
