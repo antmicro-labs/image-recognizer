@@ -1,36 +1,46 @@
 import logging
+import cv2
 import numpy as np
 import tensorflow as tf
 
 from keras import models
-from PIL import Image
 
 from app.raw_image_data_previewer.app.core import load_image, get_displayable
 
-COLOR_FORMATS = ["RGB24", "RGB332", "RGB565", "RGBA32", "ABGR444", "ABGR555", "UYVY", "GRAY"]
+COLOR_FORMATS_RATIOS = {
+    "RGB24": 3,
+    "RGB332": 1,
+    "RGB565": 2,
+    "RGBA32": 4,
+    "ABGR444": 12 / 8,
+    "ABGR555": 15 / 8,
+    "UYVY": 1,
+    "GRAY": 1,
+}
 
 
 class ColorFormatFinder:
-    IMG_WIDTH = 256
-    IMG_HEIGHT = 256
-
     class InvalidModel(Exception):
         pass
 
-    def __init__(self, model_path: str):
-        """Create object and set model
+    def __init__(self, model_path: str, model_img_width: int, model_img_height: int):
+        """Create class object and set keras model
 
         Args:
             model_path (str): Path to color format model
+            model_img_width (int): Model image width
+            model_img_height (int): Model image height
 
         Raises:
             InvalidModel: Invalid model format
         """
+        self.model_img_width = model_img_width
+        self.model_img_height = model_img_height
         try:
             self.model: models.Model = models.load_model(model_path)
         except OSError:
-            logging.error("Given model is not valid")
-            raise self.InvalidModel("Given model is not valid")
+            logging.error("Given color format model is not valid")
+            raise self.InvalidModel("Given color format model is not valid")
 
     def generate_color_formats_tensor(self, img_path: str, img_width: int) -> tf.Tensor:
         """Generate a tensor with representations of all color formats for a given image
@@ -41,19 +51,20 @@ class ColorFormatFinder:
         Returns:
             tf.Tensor: Tensor with representations of all color formats
         """
-        color_formats_n = len(COLOR_FORMATS)
-        imgs = np.empty(shape=(color_formats_n, self.IMG_WIDTH, self.IMG_HEIGHT, 1), dtype=np.float32)
+        imgs = np.empty(
+            shape=(len(COLOR_FORMATS_RATIOS), self.model_img_width, self.model_img_height, 1), dtype=np.float32
+        )
 
-        for i in range(color_formats_n):
-            img_data = load_image(img_path, COLOR_FORMATS[i], img_width)
+        i = 0
+        for color_format, resolution_ratio in COLOR_FORMATS_RATIOS.items():
+            img_data = load_image(img_path, color_format, int(img_width / resolution_ratio))
             img = get_displayable(img_data)
-            img = Image.fromarray(img, mode="RGB")
-            img = img.convert("L")
-            img = img.resize((self.IMG_WIDTH, self.IMG_HEIGHT))
-            img = np.array(img, dtype=np.float32)
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            img = cv2.resize(img, (self.model_img_width, self.model_img_height), interpolation=cv2.INTER_AREA)
             img = np.expand_dims(img, axis=-1)
             img = (img / 255) - 0.5
             imgs[i] = img
+            i += 1
 
         return tf.convert_to_tensor(imgs)
 
@@ -71,6 +82,7 @@ class ColorFormatFinder:
         color_formats_confidences = {}
         results_tensor = self.model(color_formats_tensor)
         results_list = list(np.squeeze(results_tensor, axis=-1))
-        for i in range(len(COLOR_FORMATS)):
-            color_formats_confidences[COLOR_FORMATS[i]] = results_list[i]
+        color_formats = list(COLOR_FORMATS_RATIOS.keys())
+        for i in range(len(color_formats)):
+            color_formats_confidences[color_formats[i]] = results_list[i]
         return color_formats_confidences
