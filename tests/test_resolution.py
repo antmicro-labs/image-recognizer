@@ -24,25 +24,25 @@ class TestResolution(unittest.TestCase):
                 self.assertAlmostEqual(expected, best.width, delta=self.delta)
 
     def test_abgr444(self):
-        self.template("abgr444", 12 / 8)
+        self.template("ABGR444", 12 / 8)
 
     def test_abgr555(self):
-        self.template("abgr555", 15 / 8)
+        self.template("ABGR555", 15 / 8)
 
     def test_gray(self):
-        self.template("gray", 1)
+        self.template("GRAY", 1)
 
     def test_rgb(self):
-        self.template("rgb", 3)
+        self.template("RGB24", 3)
 
     def test_rgb332(self):
-        self.template("rgb332", 1)
+        self.template("RGB332", 1)
 
     def test_rgb565(self):
-        self.template("rgb565", 2)
+        self.template("RGB565", 2)
 
     def test_rgba32(self):
-        self.template("rgba32", 4)
+        self.template("RGBA32", 4)
 
     def test_uyvy(self):
-        self.template("uyvy", 1)
+        self.template("UYVY", 1)

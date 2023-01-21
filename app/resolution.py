@@ -1,23 +1,16 @@
 import math
-import os
 import logging
-import json
 import tensorflow as tf
 from tensorflow import keras  # noqa
 from keras import models
 import numpy as np
 from PIL import Image
-import gdown
 from typing import List
 from numpy.typing import NDArray
 from dataclasses import dataclass
-from pathlib import Path
 
 
 class ResolutionFinder:
-    with open("models_links.json") as f:
-        DEFAULT_MODEL_URL = json.load(f).get("default_resolution_model", None)
-    DEFAULT_MODEL_PATH = "models/default_resolution_model.h5"
     DEFAULT_MIN_WIDTH = 256
     DEFAULT_MIN_HEIGHT = 256
     DEFAULT_WH_RATIO = 8
@@ -30,8 +23,11 @@ class ResolutionFinder:
         240,
         300,
         320,
+        333,  # Test
         360,
+        375,  # Test
         400,
+        427,  # Test
         480,
         500,
         540,
@@ -67,36 +63,6 @@ class ResolutionFinder:
         4320,
     ]
 
-    def __init__(
-        self,
-        model_path=DEFAULT_MODEL_PATH,
-        ovveride_model=False,
-    ):
-        """Create object and download model if needed
-
-        Args:
-            model_path (_type_, optional): Path to tensorflow model. Defaults to DEFAULT_MODEL_PATH.
-            ovveride_model (bool, optional): Tells if model existing model should be redownloaded. Defaults to False.
-
-        Raises:
-            InvalidModel: Invalid model format
-        """
-        if (not os.path.exists(model_path)) and (self.DEFAULT_MODEL_URL is None):
-            logging.error("No default model url")
-            raise self.InvalidModel("No default model url")
-        if not os.path.exists(model_path) or ovveride_model:
-            if model_path == self.DEFAULT_MODEL_PATH:
-                logging.info("Downloading default model")
-            else:
-                logging.info("Downloading model")
-            Path(*Path(model_path).parts[:-1]).mkdir(parents=True, exist_ok=True)
-            gdown.download(self.DEFAULT_MODEL_URL, model_path, quiet=False)
-        try:
-            self.model: models.Model = models.load_model(model_path)
-        except OSError:
-            logging.error("Given model is not valid")
-            raise self.InvalidModel("Given model is not valid")
-
     class ImageTooSmall(Exception):
         pass
 
@@ -108,6 +74,25 @@ class ResolutionFinder:
         width: int
         height: int
         confidence: float
+
+    def __init__(self, model_path: str, model_img_width: int, model_img_height: int):
+        """Create class object and model object
+
+        Args:
+            model_path (str): Path to tensorflow resolution model.
+            model_img_width (int): Model image width
+            model_img_height (int): Model image height
+
+        Raises:
+            InvalidModel: Invalid model
+        """
+        self.model_img_width = model_img_width
+        self.model_img_height = model_img_height
+        try:
+            self.model: models.Model = models.load_model(model_path)
+        except OSError:
+            logging.error("Given resolution model is invalid")
+            raise self.InvalidModel("Given resolution model is invalid")
 
     def single_prediction_tour(
         self,
@@ -145,12 +130,12 @@ class ResolutionFinder:
         for batch_width in range(min_width, max_width, step):
             batch_height = len(raw) // batch_width
             img = Image.frombytes("L", (batch_width, batch_height), raw)
-            img = img.resize((256, 256))
+            img = img.resize((self.model_img_width, self.model_img_height))
             img = np.asarray(img)
             img = np.expand_dims(img, axis=-1)
             batches.append(tf.convert_to_tensor(img / 255 - 0.5))
         batches = tf.stack(batches)
-        predictions: NDArray = np.squeeze(self.model.predict(batches), axis=-1)
+        predictions: NDArray = np.squeeze(self.model(batches), axis=-1)
         result = {}
         for i, prediction in enumerate(predictions):
             result[i * step + min_width] = prediction
@@ -159,9 +144,7 @@ class ResolutionFinder:
             for k, v in sorted(result.items(), key=lambda item: item[1], reverse=True)
         ]
 
-    def find_resolution(
-        self, path: str, best_results: int = 3
-    ) -> List[FoundedResolution]:
+    def find_resolution(self, path: str, best_results: int = 3) -> List[FoundedResolution]:
         """Find resolution of image, from given path
 
         Args:
