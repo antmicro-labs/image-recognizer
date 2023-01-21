@@ -81,14 +81,19 @@ class ImageRecognizer:
         self.color_format_model_img_width = color_format_model_img_width
         self.color_format_model_img_height = color_format_model_img_height
 
-        if (not exists(self.resolution_model_path)) or (not exists(self.color_format_model_path)):
-            if (self.resolution_model_path == self.DEFAULT_RESOLUTION_MODEL_PATH) and (
-                self.color_format_model_path == self.DEFAULT_COLOR_FORMAT_MODEL_PATH
-            ):
-                self.download_default_models()
+        if not exists(self.resolution_model_path):
+            if self.resolution_model_path == self.DEFAULT_RESOLUTION_MODEL_PATH:
+                self.download_default_model(self.MODELS_LINKS_RESOLUTION_KEY, self.DEFAULT_RESOLUTION_MODEL_PATH)
             else:
-                logging.error("Custom model not found")
-                raise self.CustomModelNotFound("Custom model not found")
+                logging.error("Custom resolution model not found")
+                raise self.CustomModelNotFound("Custom resolution model not found")
+
+        if not exists(self.color_format_model_path):
+            if self.color_format_model_path == self.DEFAULT_COLOR_FORMAT_MODEL_PATH:
+                self.download_default_model(self.MODELS_LINKS_COLOR_FORMAT_KEY, self.DEFAULT_COLOR_FORMAT_MODEL_PATH)
+            else:
+                logging.error("Custom resolution model not found")
+                raise self.CustomModelNotFound("Custom resolution model not found")
 
         self.resolution_finder = ResolutionFinder(
             self.resolution_model_path, self.resolution_model_img_width, self.resolution_model_img_height
@@ -98,20 +103,21 @@ class ImageRecognizer:
             self.color_format_model_path, self.color_format_model_img_width, self.color_format_model_img_height
         )
 
-    def download_default_models(self) -> None:
-        """Downloads defaults keras models
+    def download_default_model(self, model_key: str, model_path: str) -> None:
+        """Downloads defaults keras model
+
+        Args:
+            model_key (str): Model key in JSON file with models links
+            model_path (str): Path to location where downloaded model should be saved
 
         Raises:
             self.MissingModelsLinksFile: Models links file not found
             self.InvalidModelsLinksFile: Models links file is invalid
-            self.InvalidModelLink: Resolution model link is invalid
-            self.InvalidModelLink: Color format model link is invalid
+            self.InvalidModelLink: Given model link is invalid
         """
         try:
             with open(self.MODELS_LINKS_FILE_PATH, "r", encoding="utf-8") as file:
-                links = json.load(file)
-                resolution_model_link = links[self.MODELS_LINKS_RESOLUTION_KEY]
-                color_format_model_link = links[self.MODELS_LINKS_COLOR_FORMAT_KEY]
+                link = json.load(file)[model_key]
         except FileNotFoundError:
             logging.error("Models links file not found")
             raise self.MissingModelsLinksFile("Models links file not found")
@@ -119,12 +125,9 @@ class ImageRecognizer:
             logging.error("Models links file is invalid")
             raise self.InvalidModelsLinksFile("Models links file is invalid")
 
-        if gdown.download(resolution_model_link, self.DEFAULT_RESOLUTION_MODEL_PATH) is None:
-            logging.error("Resolution model link is invalid")
-            raise self.InvalidModelLink("Resolution model link is invalid")
-        if gdown.download(color_format_model_link, self.DEFAULT_COLOR_FORMAT_MODEL_PATH) is None:
-            logging.error("Color format model link is invalid")
-            raise self.InvalidModelLink("Color format model link is invalid")
+        if gdown.download(link, model_path) is None:
+            logging.error(f"{model_key} model link is invalid")
+            raise self.InvalidModelLink(f"{model_key} model link is invalid")
 
     def recognize(self, raw_img_path: str) -> Result:
         """Recognize raw image - find correct color format and resolution
