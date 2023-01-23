@@ -15,4 +15,5 @@ Application starts by loading raw binary data of a image. This data is then bein
 ## Usage
 
 python app recognize <path_to_raw_file> <value_to_check> 
+
 where value can be : [color_format, img_width, img_height, color_format_confidence, resolution_confidence]
