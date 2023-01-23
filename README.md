@@ -25,6 +25,15 @@ Google Colab Jupyter notebooks used for training:
 
 ### Datasets
 
+Dataset are *.tf directories containg image tensor and label
+
+# Resolution dataset
+
+This dataset was made using own C app that formated RGB24 pictures to different formats and saved them as a raw data. Bad data was generated with treating the data as different resolution than it is really and saved as GRAY8 image tensor
+
+# Color recognition dataset
+
+This dataset was made using imagemagick tool. Pictures from different format was converted to GRAY8 to save some bit depth details. Bad ones was made using raviewer - raw data was opened as different color format and saved as png picture that was converted to GRAY8 as image tensor
 
 ## Usage
 
