@@ -19,7 +19,7 @@ Models were taught on generated datasets, and the learning process took place on
 
 Google Colab Jupyter notebooks used for training:
 
- - Resolution model: 
+ - Resolution model: https://colab.research.google.com/drive/1Y0Y_-xeoku9xGLl-6Tpi8DYuOUxtSJXH?usp=sharing
  - Color format model: https://colab.research.google.com/drive/1dsIcGjQE9uR4595Xa_XoNO6VwXXDu-BN?usp=sharing
 
 
