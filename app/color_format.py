@@ -5,7 +5,7 @@ import tensorflow as tf
 
 from keras import models
 
-from app.raw_image_data_previewer.app.core import load_image, get_displayable
+from raw_image_data_previewer.app.core import load_image, get_displayable
 
 COLOR_FORMATS_RATIOS = {
     "RGB24": 3,
