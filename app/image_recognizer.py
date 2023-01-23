@@ -4,8 +4,8 @@ import json
 
 from os.path import join, exists
 
-from app.resolution import ResolutionFinder
-from app.color_format import ColorFormatFinder
+from resolution import ResolutionFinder
+from color_format import ColorFormatFinder
 from dataclasses import dataclass
 
 

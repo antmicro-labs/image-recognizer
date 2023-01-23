@@ -1,4 +1,4 @@
-from app.image_recognizer import ImageRecognizer
+from image_recognizer import ImageRecognizer
 
 import fire
 
