@@ -4,7 +4,7 @@ Recognize images color formats and resolutions based on their raw binary data.
 
 ## Description
 
-image-recognizer can recognize color formats and resolutions of images based on their raw binary data. Application is written in Python and uses two Keras neural networks models to detect the correct color format and resolution. In addition, it is possible to use your own custom Keras neural networks models instead of default ones. 
+image-recognizer can recognize color formats and resolutions of images based on their raw binary data. Application is written in Python and uses two Keras neural networks models to detect the correct color format and resolution. In addition, it is possible to use your own custom Keras neural networks models instead of default ones.
 
 ## How does it work
 Simplified image-recognizer operation principle can be seen on diagram below:
@@ -17,11 +17,7 @@ Both keras models used implement a convolutional neuron network with a binary ou
 
 Models were taught on generated datasets, and the learning process took place on Google Colab.
 
-Google Colab Jupyter notebooks used for training:
-
- - Resolution model: https://colab.research.google.com/drive/1Y0Y_-xeoku9xGLl-6Tpi8DYuOUxtSJXH?usp=sharing
- - Color format model: https://colab.research.google.com/drive/1dsIcGjQE9uR4595Xa_XoNO6VwXXDu-BN?usp=sharing
-
+Google Colab Jupyter notebooks used for training are placed in [notebooks](notebooks) folder.
 
 ## Datasets
 
@@ -37,6 +33,6 @@ This dataset was made using imagemagick tool. Pictures from different format was
 
 ## Usage
 
-python app recognize <path_to_raw_file> <value_to_check> 
+python app recognize <path_to_raw_file> <value_to_check>
 
 where value can be : [color_format, img_width, img_height, color_format_confidence, resolution_confidence]
