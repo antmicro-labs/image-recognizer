@@ -1,5 +1,4 @@
 import logging
-
 from os.path import join, exists
 
 from resolution import ResolutionFinder
