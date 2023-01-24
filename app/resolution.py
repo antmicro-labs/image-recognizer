@@ -75,6 +75,11 @@ class ResolutionFinder:
         height: int
         confidence: float
 
+        def __eq__(self, __o: object) -> bool:
+            if not isinstance(__o, self.__class__):
+                return False
+            return self.width == __o.width
+
     def __init__(self, model_path: str, model_img_width: int, model_img_height: int):
         """Create class object and model object
 
@@ -144,7 +149,9 @@ class ResolutionFinder:
             for k, v in sorted(result.items(), key=lambda item: item[1], reverse=True)
         ]
 
-    def find_resolution(self, path: str, best_results: int = 3) -> List[FoundedResolution]:
+    def find_resolution(
+        self, path: str, best_results: int = 3
+    ) -> List[FoundedResolution]:
         """Find resolution of image, from given path
 
         Args:
@@ -169,6 +176,9 @@ class ResolutionFinder:
                 )[0]
                 r.height = min(self.RESOLUTION_HEIGHTS, key=lambda x: abs(x - r.height))
                 r.width = len(raw) // r.height
-                result.append(r)
+                if r not in result:
+                    result.append(r)
+                else:
+                    best_results += 1
             result = sorted(result, key=lambda x: x.confidence, reverse=True)
             return result

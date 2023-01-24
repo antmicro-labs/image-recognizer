@@ -1,0 +1,3 @@
+[submodule "image-recognizer-models"]
+	path = image-recognizer-models
+	url = git@github.com:antmicro-labs/image-recognizer-models.git
